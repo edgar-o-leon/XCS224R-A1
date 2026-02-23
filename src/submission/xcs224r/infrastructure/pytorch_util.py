@@ -87,14 +87,19 @@ def build_mlp(
     in_dim = input_size
 
     # Hidden layers
-    for _ in range(n_layers - 1):
-        layers.append(nn.Linear(in_dim, size))
-        layers.append(activation)
-        in_dim = size
+    for _ in range(n_layers):
+      layers.append(nn.Linear(in_dim, size))
+      act = activation if isinstance(activation, nn.Module) else activation()
+      layers.append(act)
+      in_dim = size
 
     # Output layer
     layers.append(nn.Linear(in_dim, output_size))
-    layers.append(output_activation)
+    out_act = output_activation if isinstance(output_activation, nn.Module) else output_activation()
+    layers.append(out_act)
+
+
+
 
     mlp = nn.Sequential(*layers)
 
