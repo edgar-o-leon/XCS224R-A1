@@ -129,6 +129,17 @@ class ReplayBuffer():
         ## Note that rews, next_obs, and terminals are not used for BC
 
         # *** START CODE HERE ***
+
+        idxs = np.random.permutation(self.obs.shape[0])[:batch_size]
+
+        obs_batch = self.obs[idxs]
+        acs_batch = self.acs[idxs]
+        rews_batch = self.rews[idxs]
+        next_obs_batch = self.next_obs[idxs]
+        term_batch = self.terminals[idxs]
+
+        return obs_batch, acs_batch, rews_batch, next_obs_batch, term_batch
+
         # *** END CODE HERE ***
 
     def sample_recent_data(self, batch_size=1):

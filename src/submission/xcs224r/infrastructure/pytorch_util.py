@@ -83,6 +83,21 @@ def build_mlp(
     mlp = None
 
     # *** START CODE HERE ***
+    layers = []
+    in_dim = input_size
+
+    # Hidden layers
+    for _ in range(n_layers - 1):
+        layers.append(nn.Linear(in_dim, size))
+        layers.append(activation)
+        in_dim = size
+
+    # Output layer
+    layers.append(nn.Linear(in_dim, output_size))
+    layers.append(output_activation)
+
+    mlp = nn.Sequential(*layers)
+
     # *** END CODE HERE ***
 
     return mlp

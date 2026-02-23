@@ -210,6 +210,31 @@ class BCTrainer:
         print("\nCollecting data to be used for training...")
 
         # *** START CODE HERE ***
+        
+
+        # ----------------------------------------------------
+        # CASE 1: On the first iteration
+        # want to handle loading from expert data
+        # ----------------------------------------------------
+        if itr == 0 and load_initial_expertdata is not None:
+            print(f"Loading expert data from: {load_initial_expertdata}")
+            with open(load_initial_expertdata, 'rb') as f:
+                paths = pickle.load(f)
+            # Count env steps
+            envsteps_this_batch = sum([len(p["reward"]) for p in paths])
+
+        # ----------------------------------------------------
+        # CASE 2: To collect data, you might want to use pre-existing 
+        #sample_trajectories
+        # ----------------------------------------------------
+        else:
+            paths, envsteps_this_batch = utils.sample_trajectories(
+                self.env,
+                collect_policy,
+                self.params['batch_size'],
+                self.params['ep_len']
+            )
+
         # *** END CODE HERE ***
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
@@ -237,15 +262,37 @@ class BCTrainer:
             ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = None, None, None, None, None
 
             # *** START CODE HERE ***
-            # *** END CODE HERE ***
+            #from replay buffer
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = \
+                self.agent.sample(self.params['train_batch_size'])  
+            # *** END CODE HERE ***      
+
+                   
+
 
             # TODO use the sampled data to train an agent
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
+            
 
             train_log = None
 
             # *** START CODE HERE ***
+            train_log = self.agent.train(ob_batch, ac_batch)
+            all_logs.append(train_log)
+    
+
+        for train_step in range(self.params['num_agent_train_steps_per_iter']):
+
+            # Sample batch from replay buffer
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = \
+                self.agent.sample(self.params['train_batch_size'])
+
+            # Train agent
+            train_log = self.agent.train(ob_batch, ac_batch)
+            all_logs.append(train_log)
+
+        
             # *** END CODE HERE ***
         return all_logs
 
@@ -264,6 +311,13 @@ class BCTrainer:
         # and replace paths[i]["action"] with these expert labels
 
         # *** START CODE HERE ***
+        for path in paths:
+          obs = path["observation"]
+          expert_actions = expert_policy.get_action(obs)
+          path["action"] = expert_actions
+
+
+
         # *** END CODE HERE ***
 
         return paths
